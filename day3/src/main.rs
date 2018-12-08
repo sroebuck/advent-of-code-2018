@@ -12,17 +12,25 @@ fn main() -> io::Result<()> {
     let reader = BufReader::new(f);
 
     let mut fabric = Fabric::new(1000, 1000);
+    let mut claims = Vec::new();
     for line in reader.lines() {
         let claim = Claim::parse(&line?);
         fabric.record_claim(&claim);
+        claims.push(claim);
     }
     println!("Overclaimed {} square inches", fabric.overclaimed_space());
+
+    for claim in claims {
+        if fabric.has_one_claim(&claim) {
+            println!("Only one claim for claim #{}", claim.id);
+        }
+    }
 
     Ok(())
 }
 
 struct Claim {
-    _id: usize,
+    id: usize,
     x: usize,
     y: usize,
     width: usize,
@@ -37,7 +45,7 @@ impl Claim {
     fn parse(input: &str) -> Claim {
         let caps = RE.captures(input).unwrap();
         Claim {
-            _id: caps.get(1).unwrap().as_str().parse().unwrap(),
+            id: caps.get(1).unwrap().as_str().parse().unwrap(),
             x: caps.get(2).unwrap().as_str().parse().unwrap(),
             y: caps.get(3).unwrap().as_str().parse().unwrap(),
             width: caps.get(4).unwrap().as_str().parse().unwrap(),
@@ -71,5 +79,16 @@ impl Fabric {
             .flat_map(|e| e.iter())
             .filter(|&e| *e > 1)
             .count()
+    }
+
+    fn has_one_claim(&self, claim: &Claim) -> bool {
+        for x in claim.x..claim.x + claim.width {
+            for y in claim.y..claim.y + claim.height {
+                if self.claim_space[x][y] != 1 {
+                    return false;
+                };
+            }
+        }
+        true
     }
 }
