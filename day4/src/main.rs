@@ -39,26 +39,16 @@ fn main() -> io::Result<()> {
         }
     }
 
-    // Find guard with most sleep...
     let mut guard_id = 0;
-    let mut max = 0;
-    let mut record = vec![];
-    for (id, rec) in sleep_record {
-        let sum_of_sleeps: usize = rec.iter().sum();
-        if sum_of_sleeps > max {
-            guard_id = id;
-            max = sum_of_sleeps;
-            record = rec;
-        }
-    }
-
-    // Find their most frequent sleep point...
     let mut local_max = 0;
     let mut minute = 0;
-    for (m, &r) in record.iter().enumerate() {
-        if r > local_max {
-            local_max = r;
-            minute = m;
+    for (id, rec) in sleep_record {
+        for (m, &r) in rec.iter().enumerate() {
+            if r > local_max {
+                local_max = r;
+                minute = m;
+                guard_id = id;
+            }
         }
     }
 
